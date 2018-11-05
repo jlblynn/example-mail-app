@@ -84,7 +84,7 @@ Remember to use the <keep-alive> tag to improve performance.
 
 We will store the component to be rendered in the template, in a data property.
 We will need a way to navigate back from one view to another, so add a histroy data property containing an array of objects.
-Each object will contaona tag name of the component and the views title.
+Each object will contain a tag name of the component and the views title.
 For now we will create the default component to be rendered when the page is first loaded.
 
 
@@ -118,8 +118,10 @@ Import Sent, Important, Trash and ViewMessage:
         data() {
             return {
                 history: [
-                    tag: 'app-inbox',
-                    title: 'Inbox'
+                    {
+                        tag: 'app-inbox',
+                        title: 'Inbox'
+                    }
                 ]
             };
         },
@@ -220,8 +222,8 @@ export default {
     created() {
         eventBus.$on('changeView', (data) => {
             let temp = [{
-                tag = data.tag,
-                title = data.title
+                tag: data.tag,
+                title: data.title
             }];
 
             this.history = temp.concat(this.history.splice(0));
@@ -239,7 +241,7 @@ Set the activeView to data.tag:
 
 export default {
   created() {
-      eentBus.$on('changeView', (data) => {
+      eventBus.$on('changeView', (data) => {
           this.activeView = data.tag;
       });
   },
@@ -274,4 +276,100 @@ So if this is true, the active class will be added:
         </a>
     </li>
 </ul>
+
+Loading messages from a file called messages.js to display in the e-mails.
+They will be objects that contain other parts of information in each message.
+Looking something like this:
+
+{
+    subject: '',
+    content: `
+        <html>
+    `,
+    isImportant: ,
+    isDeleted: ,
+    isRead: ,
+    type: '',
+    date: ,
+    from: {
+        name: '',
+        email: ''
+    },
+    atatchments: []
+}
+
+Import this file to the App.vue file:
+
+import messages from './data/messages';
+
+Add a data property for the messages within this component so we can keep track of the messages globally:
+
+export default {
+        data() {
+            return {
+                messages: messages
+            };
+        }
+    }
+
+Let's look at adding numbers to the sidebar menu to show how many messages there are in each category.
+Add a prop to the sidebar component with a messages property:
+
+export default {
+    props: {
+        messages: {
+            type: Array,
+            required: true
+        }
+    },
+
+Now we can pass in the messages from the App component.
+Use the v-bind directive and refer to the messages data property in the template in App.vue:
+
+<div class="mail-box">
+    <app-sidebar :messages="messages"></app-sidebar>
+    <app-content></app-content>
+</div>
+
+In the sidebar component, let's group the messages by their status.
+We want a property to access the unread messages.
+Add a computed property for each message state which then filters the collection of all of the messages.
+Use a boolean value to determine whether the message is unread by checking if it is incoming, and has not been read, and has not been deleted.
+Do the same for sent messages, important messages, and deleted:
+
+computed: {
+    unreadMessages() {
+        return this.message.filter(function(message) {
+            return (message.type == 'incoming' && !message.isRead && !message.isDeleted);
+        });
+    },
+    sentMessages() {
+    return this.message.filter(function(message) {
+        return (message.type == 'outgoing' && !message.isDeleted);
+    });
+    },
+    importantMessages() {
+        return this.message.filter(function(message) {
+            return (message.type == 'incoming' && message.isImportant && !message.isDeleted);
+        });
+    },
+    trashedMessages() {
+        return this.message.filter(function(message) {
+            return message.isDeleted == true;
+        });
+    },
+}
+
+These will return arrays so we can find the length of each array to display as the number for each message state.
+For each message state, display it in the template next to the correct menu item in the sidebar with string interpolation.
+Eg:
+
+{{ unreadMessages.length }}
+
+Now it should display the correct amounts in the sidebar.
+
+
+
+
+
 

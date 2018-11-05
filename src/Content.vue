@@ -11,31 +11,31 @@
 </template>
 
 <script>
+    import { eventBus } from './main';
     import Inbox from './Inbox.vue';
     import Sent from './Sent.vue';
     import Important from './Important.vue';
     import Trash from './Trash.vue';
     import ViewMessage from './ViewMessage.vue';
-    import { eventBus } from './main.js';
-
     export default {
-        created() {
-            eventBus.$on('changeView', (data) => {
-                let temp = [{
-                    tag = data.tag,
-                    title = data.title
-                }];
-
-                this.history = temp.concat(this.history.splice(0));
-            });
-        },
         data() {
             return {
                 history: [
-                    tag: 'app-inbox',
-                    title: 'Inbox'
+                    {
+                        tag: 'app-inbox',
+                        title: 'Inbox'
+                    }
                 ]
             };
+        },
+        created() {
+            eventBus.$on('changeView', (data) => {
+                let temp = [{
+                    tag: data.tag,
+                    title: data.title
+                }];
+                this.history = temp.concat(this.history.splice(0));
+            });
         },
         computed: {
             currentView() {
@@ -43,7 +43,11 @@
             }
         },
         components: {
-            appInbox: Inbox
+            appInbox: Inbox,
+            appSent: Sent,
+            appImportant: Important,
+            appTrash: Trash,
+            appViewMessage: ViewMessage
         }
     }
 </script>
