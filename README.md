@@ -368,8 +368,177 @@ Eg:
 
 Now it should display the correct amounts in the sidebar.
 
+Let's look at displaying messages in the inbox.
+We need to pass the messages from the App component to the Content component.
+In the Content component add a property object with a messages key that will also be an object.
+Set its type to an array and make it required:
 
+props: {
+    messages: {
+        type: Array,
+        required: true
+    }
+}
 
+Then in the App component use the v-bind directive on the <app-content> tag on the messages property:
 
+<app-content :messages="messages"></app-content>
 
+Now the messages are available in the Content component.
+Now we need to pass them to the dynamic component - the activeView.
 
+In the history data object, add in a messages property and set it to null so we can make it reactive:
+
+history: [
+    {
+        tag: 'app-inbox',
+        title: 'Inbox',
+        data: {
+            messages: null
+        }
+    }
+]
+
+In the template we can pass the current views data object with the v-bind directive.
+We will pass the object to a data prop that we will add in soon.
+Set it to the currentView data object:
+
+<component :is="currentView.tag" :data="currentView.data"></component>
+
+We need to modify the currentView property.
+Set the messages property on the data object and always pass the messages along to the view.
+In the currentView computed property, take the current view and store it in a variable called 'current'.
+On this variable set the messages on the data object to this.messages.
+Return the current variable.
+This ensures the messages are always part of the data object:
+
+computed: {
+    currentView() {
+        let current = this.history[0];
+        current.data.messages = this.messages;
+        return current;
+    }
+},
+
+Within our listener for the changeView event we need to handle the case where no data object is passed along in the event.
+In the created lifecycle hook, add a data property.
+Set it to the data that is passed along in the event.
+If it does not contain a truthy value, set it to an empty object:
+
+created() {
+    eventBus.$on('changeView', (data) => {
+        let temp = [{
+            tag: data.tag,
+            title: data.title,
+            data: data.data || {}
+        }];
+        this.history = temp.concat(this.history.splice(0));
+    });
+},
+
+Now we have what we need for the inbox view.
+In the inbox component add in a props for accepting the data object.
+Add a props key with a data object that is required:
+
+props: {
+    data: {
+        type: Object,
+        required: true
+    }
+}
+
+We need to filter this incoming data so we only display the incomingMessages.
+Create a computed property and add an expression to check whether the messages are incoming:
+
+computed: {
+    incomingMessages() {
+        return this.data.messages.filter(function(message) {
+            return (message.type == 'incoming' && !message.isDeleted);
+        });
+    }
+}
+
+Now let's make some html markup to display these messages.
+We will use this in multiple components so make it into it's own component.
+So in the src folder create a Messages.vue file.
+Then use the props key to take in the messages data:
+
+export default {
+    props: {
+        messages: {
+            type: Array,
+            required: true
+        }
+    }
+}
+
+Back in the Inbox component, register the Messages component and add it to the template:
+
+import Messages from './Messages.vue';
+
+Then add a local components key and give it a tag of appMessages and pass in the Messages object:
+
+components: {
+    appMessages: Messages
+}
+
+Then in the template create a div with the class of inbox body.
+Inside of that put the <app-messages> tag.
+Bind the messages to it using the computed property incomingMessages:
+
+<div class="inbox-body">
+    <app-messages :messages="incomingMessages"></app-messages>
+</div>
+
+In the Messages component put in the html markup in the template:
+
+<template>
+    <table class="table table-inbox table-hover">
+        <tbody>
+            <tr>
+                <td><input type="checkbox"></td>
+                <td>
+                    <a href="#" >
+                        <i class="fa fa-star"></i>
+                    </a>
+                </td>
+                <td>from</td>
+                <td>subject</td>
+                <td><i class="fa fa-paperclip"></i></td>
+                <td class="text-right">date</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>No messages here yet.</p>
+</template>
+
+Now we need to make this template dynamic.
+Use the v-if directive to display the table only if there are messages.
+Then loop through the messages array and add a table row for each message, and for the unread messages add a highlighted class using the v-bind directive.
+Then only display the star icon if the message is important.
+Output who the message is from and the subject.
+Make it so it will only display the paperclip icon if there is an attatchment.
+Display the data.
+Then if there are no messages display a paragraph element:
+
+<template>
+    <table v-if="messages.length > 0" class="table table-inbox table-hover">
+        <tbody>
+            <tr v-for="message in messages" :class="{ unread: typeof message.isRead !== 'undefined' && !message.isRead }">
+                <td><input type="checkbox"></td>
+                <td>
+                    <a href="#" v-if="typeof message.isImportant !== 'undefined'">
+                        <i class="fa fa-star"></i>
+                    </a>
+                </td>
+                <td>{{ message.from.name }}</td>
+                <td>{{ message.subject }}</td>
+                <td><i v-if="message.attachments.length > 0" class="fa fa-paperclip"></i></td>
+                <td class="text-right">{{ message.date.fromNow() }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p v-else>No messages here yet.</p>
+</template>
