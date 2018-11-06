@@ -605,3 +605,104 @@ Inside that pass in the <app-messages> tag and bind it to messages="sentMessages
 </div>
 
 Do the same for the Important and Trashed components.
+
+Displaying a message.
+Open up the Messages component and add a click event to the <tr> element.
+Call the event 'openMessage' and pass in the message being the alias of the v-for directive:
+
+<tr v-for="message in messages" @click="openMessage(message)" :class="{ unread: typeof message.isRead !== 'undefined' && !message.isRead }">
+
+Use the event bus for triggering an event, so import it.
+
+import {eventBus } from './main';
+
+Add a methods key with a openMessage event handler with the parameter of message.
+Use the event bus and call the $emit method on it, the event name will be 'changeView' and remember we have already added a listener for this in the Content component.
+Pass in some data with this event.
+The tag key with the tag name for the component we want to render.
+We are using the component component to render dynamic components.
+So we want to render 'app-view-message'.
+Send a title for the view as well which will be messsage.subject.
+Then send some more data which will be the message itself:
+
+methods: {
+    openMessage(message) {
+        eventBus.$emit('changeView', {
+            tag: 'app-view-message',
+            title: message.subject,
+            data: {
+                message: message
+            }
+        });
+    }
+}
+
+If we click on a message now, we should see that the viewMessage component is being rendered.
+Open up that component and add a props key.
+Pass in the data object with a type of object and required:
+
+export default {
+    props: {
+        data: {
+            type: Object,
+            required: true
+        }
+    }
+}
+
+Now let's render it in the template.
+We are using a moment.js object so to access the date we can use {{ data.message.date.fromNow() }}.
+Display who it is from name and email.
+The content of the email will contain html so use the v-html directive.
+It takes an expression so refer to the data property and give it a class of "message" which displays line breaks.
+Display any attachments in a new div 'attachments'.
+Use a v-if directive if there there is anything in the length of the attatchments array.
+Use a v-for directive on a <li> element to display the attachments in data.message.attachments.
+We will just display an icon for an attachment using the font awesome library.
+Include the attachment name and size of file.
+
+<template>
+    <div class="inbox-body">
+        <p><strong>Date:</strong> {{ data.message.date.fromNow() }}</p>
+        <p><strong>From:</strong> {{ data.message.from.name }} <{{ data.message.from.email }}></p>
+        <hr>
+
+        <div v-html="data.message.content" class="message"></div>
+
+        <div v-if="data.message.attachments.length > 0" class="attachments">
+            <h4>Attachments</h4>
+
+            <ul>
+                <li v-for="attachment in data.message.attachments">
+                    <i class="fa fa-paperclip"></i> {{ attachment.fileName }} ({{ attachment.size }})
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+
+Add a filter in the script for displaying the file size in MB.
+Don't worry about the code for it:
+
+filters: {
+    formatBytes(bytes) {
+        if (bytes == 0) {
+            return '0 Bytes';
+        }
+        let decimals = 2;
+        let k = 1000;
+        let dm = decimals + 1 || 3;
+        let sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        let i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+}
+
+Then use this filter in the template on the attachment size:
+
+({{ attachment.size | formatBytes }})
+
+
+
+
+
