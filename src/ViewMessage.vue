@@ -1,5 +1,14 @@
 <template>
     <div class="inbox-body">
+        <div class="mail-option">
+            <button class="btn btn-primary" @click="navigateBack">
+                <i class="fa fa-arrow-left" aria-hidden="true"></i>&nbsp; Back
+            </button>
+            <button class="btn btn-danger" @click="data.message.isDeleted = true" :disabled="data.message.isDeleted">
+                <i class="fa fa-trash-o"></i>&nbsp; {{ data.message.isDeleted ? 'Deleted' : 'Delete'}}
+            </button>
+        </div>
+
         <p><strong>Date:</strong> {{ data.message.date.fromNow() }}</p>
         <p><strong>From:</strong> {{ data.message.from.name }} <{{ data.message.from.email }}></p>
         <hr>
@@ -19,6 +28,7 @@
 </template>
 
 <script>
+    import { eventBus } from './main';
     export default {
         props: {
             data: {
@@ -29,6 +39,16 @@
         activated() {
             if (typeof this.data.message.isRead !== 'undefined') {
                 this.data.message.isRead =true;
+            }
+        },
+        methods: {
+            navigateBack() {
+                let previousView = this.$parent.previousView;
+                eventBus.$emit('changeView', {
+                    tag: previousView.tag,
+                    title: previousView.title,
+                    data: previousView.data
+                });
             }
         },
         filters: {

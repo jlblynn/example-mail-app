@@ -717,3 +717,58 @@ activated() {
 }
 
 The messages should now automatically become unhighlighted and not listed as unread now once they have been opened.
+
+Navigating back to previous views.
+Right now we can only navigate by using the sidebar.
+Let's add a back button.
+
+Open up the Content component.
+Let's add a back button for retrieving the previous view.
+Make a computed property called 'previousView'.
+Return the history array index of 1.
+If this is not undefined (there is history) then return this history, otherwise return null:
+
+previousView() {
+    return typeof this.history[1] !== 'undefined' ? this.history[1] : null;
+}
+
+Now in the viewMessage component add a button to the template.
+Add a click event handler called 'navigateBack':
+
+<button class="btn btn-primary" @click="navigateBack">
+    <i class="fa fa-arrow-left" aria-hidden="true"></i>&nbsp; Back
+</button>
+
+Now create a methods object for this click event handler.
+We can access the parent component through $parent.
+This lets us access the parent component instance which lets us access the previousView property.
+Store this in a variable called 'previousView' and set this equal to this.$parent.previousView.
+Now $emit an event to change the view and send the information of the previous view.
+Start by importing the event bus.
+Use the $emit method on the event bus and issue the event 'changeView' then send along some data.
+Set the tag to the previousView.tag object.
+Set the title to the previousView.title object.
+Set the data to the previousView.data object:
+
+methods: {
+    navigateBack() {
+        let previousView = this.$parent.previousView;
+
+        eventBus.$emit('changeView', {
+            tag: prevousView.tag,
+            title: previousView.title,
+            data: previousView.data
+        });
+    }
+}
+
+Now let's add the ability to delete messages.
+In the viewMessage component, add a button with a click event in the template.
+The text will be dynamic depending on whether the message has been deleted.
+Use a boolean value to determine if the message has a isDeleted property that returns true and if so delete it, otherwise set it to 'delete' to indicate it can be deleted.
+Set the click event 'data.message.isDeleted' to true.
+Use the v-bind directive to disable the button if the message has already been deleted:
+
+<button class="btn btn-danger" @click="data.message.isDeleted = true" :disabled="data.message.isDeleted">
+    <i class="fa fa-trash-o"></i>&nbsp; {{ data.message.isDeleted ? 'Deleted' : 'Delete'}}
+</button>
