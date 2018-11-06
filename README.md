@@ -772,3 +772,22 @@ Use the v-bind directive to disable the button if the message has already been d
 <button class="btn btn-danger" @click="data.message.isDeleted = true" :disabled="data.message.isDeleted">
     <i class="fa fa-trash-o"></i>&nbsp; {{ data.message.isDeleted ? 'Deleted' : 'Delete'}}
 </button>
+
+Marking messages as read or unread with buttons.
+In the viewMessage component add two buttons in the template.
+The 'mark as unread' button needs a click event that sets the isRead property to false, also bind a disabled property that will be added is the isRead property is not true.
+Then do the opposite for the 'mark as read' button.
+Now we need to check if there is a isRead property.
+Create a template within the template and use the v-if directive.
+So if isRead does not equal undefined then show these buttons:
+
+<template v-if="typeof data.message.isRead !== 'undefined'">
+    <button class="btn btn-primary" @click="data.message.isRead = false" :disabled="!data.message.isRead">
+        <i class="fa fa-envelope-open" aria-hidden="true"></i>&nbsp; Mark as unread
+    </button>
+    <button class="btn btn-primary" @click="data.message.isRead = true" :disabled="data.message.isRead">
+        <i class="fa fa-envelope" aria-hidden="true"></i>&nbsp; Mark as read
+    </button>
+</template>
+
+
