@@ -702,7 +702,18 @@ Then use this filter in the template on the attachment size:
 
 ({{ attachment.size | formatBytes }})
 
+Now we can view messages and see they have attachments and what their size is in MB.
 
+Now lets mark read messages as read automatically.
+isRead is a property on each message in message.js.
+In the viewMessage component, create an 'activated' lifecycle hook.
+In this, access the message and write an if statement around it.
+If this isRead is not undefined, then set the value to true:
 
+activated() {
+    if (typeof this.data.message.isRead !== 'undefined') {
+        this.data.message.isRead =true;
+    }
+}
 
-
+The messages should now automatically become unhighlighted and not listed as unread now once they have been opened.
