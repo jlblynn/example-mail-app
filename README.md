@@ -542,3 +542,16 @@ Then if there are no messages display a paragraph element:
 
     <p v-else>No messages here yet.</p>
 </template>
+
+Let's add a feature to mark a message as important.
+In the messages component add a click event handler on the important icon in the template.
+Set it to message, which is the alias used within the v-for loop.
+Set message.isImportant = !message.isImportant which will switch the property's value around every time we click it.
+Then we want to add a style to this class so the important messages stand out.
+We will use the v-bind directive to make it dynamic as we are only going to add the isImportant class if the isImportant property is true.
+Put the classes in an array, then we will combine the two classes by putting an object syntax in the array.
+Set the isImportant class dynamically using a boolean expression to check if isImportant property is true:
+
+<a href="#" v-if="typeof message.isImportant !== 'undefined'" @click.prevent.stop="message,isImportant = !message.isImportant">
+    <i :class="['fa', 'fa-star', { important: message.isImportant }]"></i>
+</a>
