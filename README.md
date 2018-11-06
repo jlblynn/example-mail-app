@@ -555,3 +555,53 @@ Set the isImportant class dynamically using a boolean expression to check if isI
 <a href="#" v-if="typeof message.isImportant !== 'undefined'" @click.prevent.stop="message,isImportant = !message.isImportant">
     <i :class="['fa', 'fa-star', { important: message.isImportant }]"></i>
 </a>
+
+Displaying sent, important and trashed messages.
+We need to pass in the messages to the sent component.
+We have already added the messages to the data object within the Content component, so we only need to add this property.
+Inside of the Sent component, add a props key that is an object and required:
+
+export default {
+    props: {
+        data: {
+            type: Object,
+            required: true
+        }
+    }
+}
+
+We want to display messages that are 'outgoing' we need to filter the messages.
+We can re-use the computed property within the sidebar component.
+Copy the 'sentMessages' code and create a computed object to put the sentMessages code in the Sent component.
+Modify it so it uses the data object being passed in:
+
+computed: {
+    sentMessages() {
+        return this.data.messages.filter(function(message) {
+            return (message.type == 'outgoing' && !message.isDeleted);
+        });
+    }
+}
+
+Re-using a code is not DRY.
+We could use 'mixins' but we won't use those until later.
+
+Add the messages as a local component so it can be used within the template to display the messages.
+Import the Messages component:
+
+import Messages from './Messages.vue';
+
+Then add a components key and add appMessages and pass in the object:
+
+components: {
+    appMessages: Messages
+}
+
+Then in the template create a div with the inbox-body class.
+Inside that pass in the <app-messages> tag and bind it to messages="sentMessages":
+
+<div class="inbox-body">
+    <app-messages :messages="sentMessages"></app-messages>
+</div>
+
+Do the same for the Important and Trashed components.
