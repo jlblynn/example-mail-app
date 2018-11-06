@@ -790,4 +790,41 @@ So if isRead does not equal undefined then show these buttons:
     </button>
 </template>
 
+Refreshing the inbox.
+Clicking the refresh button will simulate recieving a new message.
+We will use the messages from 'random-messages.js' file.
+
+In the Inbox component add a button for refreshing the inbox.
+Give the button a click event called 'refresh':
+
+<div class="btn-group">
+    <a href="#" class="btn" @click="refresh">
+        <i class="fa fa-refresh"></i>&nbsp; Refresh
+    </a>
+</div>
+
+Then add a methods property for this refresh click event.
+Firstly import the event bus.
+Then use the $emit method on the event bus:
+
+methods: {
+    refresh() {
+        eventBus.$emit('refreshMessages');
+    }
+}
+
+Now we need to add a random message to the messages array.
+We will do it within the App component to propagate it to the other components.
+Import the random messages from the data file.
+Import the event bus.
+Listen to this event triggered within the inbox component by adding a created lifecycle hook with an event bus to listen $on the 'refreshMessages' event.
+Pass in a callback that will find a random message and pass it into the messages array:
+
+created() {
+    eventBus.$on('refreshMessages', () => {
+        let randomIndex = Math.floor(Math.random() * randomMessages.length);
+        let temp = [randomMessages[randomIndex]];
+        this.messages = temp.concat(this.messages.slice(0));
+    });
+}
 
