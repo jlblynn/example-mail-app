@@ -828,3 +828,135 @@ created() {
     });
 }
 
+Sending Messages.
+Create a Compose.vue component.
+It's a button which opens up a modal with inputs for entering a message.
+It exports an object which is empty for now:
+
+<template>
+    <div>
+        <a href="#composeModal" data-toggle="modal" class="btn btn-compose">Compose</a>
+
+        <div aria-hidden="true" role="dialog" tabindex="-1" id="composeModal" class="modal fade" style="display: none;">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button aria-hidden="true" data-dismiss="modal" class="close" type="button">&times;</button>
+                        <h4 class="modal-title">New Message</h4>
+                    </div>
+
+                    <div class="modal-body">
+                        <form role="form" class="form-horizontal">
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label" for="subject">Subject</label>
+                                <div class="col-lg-10">
+                                    <input type="text" id="subject" class="form-control">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="col-lg-2 control-label" for="message">Message</label>
+                                <div class="col-lg-10">
+                                    <textarea rows="10" cols="30" class="form-control" id="message"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="col-lg-offset-2 col-lg-10">
+                                    <button class="btn btn-send" type="submit">Send</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+
+    export default {
+    
+    }
+</script>
+
+We need to store the data entered in the form.
+Create a data object with a message object with the keys subject and content:
+
+data() {
+    return {
+        message: {
+            subject: '',
+            content: ''
+        }
+    };
+}
+
+Now we can use the v-model directive on the text input and text area.
+Add it to the text input for message.subject:
+
+<input type="text" v-model="message.subject" id="subject" class="form-control">
+
+And to the text area for message.content:
+
+<textarea v-model="message.content" rows="10" cols="30" class="form-control" id="message"></textarea>
+
+Now we need an event handler for when the form is submitted.
+We will listen for the submit event on the form.
+On the form element add a @submit listener and call the event name 'sendMessage':
+
+<form @submit.prevent="sendMessage" role="form" class="form-horizontal">
+
+For this event handler we want to use the event bus so import it.
+We will also use the moment.js library so import that too.
+To implement it add a methods object with the sendMessage event in it.
+$emit an event on the event bus called 'sentMessage' and pass some data along.
+Create a message object with subject, content, isDeleted: false, type: outgoing, date: moment(), a from object with a name and email property, and lastly an attachments array:
+
+methods: {
+    sendMessage() {
+        eventBus.$emit('sentMessage', {
+            message: {
+                subject: this.message.subject,
+                content: this.message.content,
+                isDeleted: false,
+                type: 'outgoing',
+                date: moment(),
+                from: {
+                    name: 'Bo Andersen',
+                    email: 'info@codingexplained.com'
+                },
+                attachments: []
+            }
+        });
+    }
+}
+
+Open up the App component.
+Listen for the event within the created lifecycle hook.
+We need to prepend the messages data property with the new message.
+Use the $on the event bus for the sentMessage event, and pass some data along.
+Create a temp array that will contain the message that has been sent.
+Now prepend it to the messages array by concatinating the temp array with the messages object:
+
+eventBus.$on('sentMessage', (data) => {
+    let temp = [data.message];
+    this.messages = temp.concat(this.messages.slice(0));
+});
+
+Add the compose component as a local component within the Sidebar component.
+Import the Compose component.
+Add a components key object, the tag will be appCompose with the object is Compose:
+
+components: {
+    appCompose: Compose
+}
+
+Then use the component within the template:
+
+<div class="compose-wrapper">
+    <app-compose></app-compose>
+</div>
+
+Note the modal needs bootstrap and jquery to work.
